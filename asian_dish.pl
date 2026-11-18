@@ -1,17 +1,13 @@
-% ==========================================================
-% ASIAN DISH IDENTIFICATION EXPERT SYSTEM
-% ==========================================================
+% Asian Dish Identification Expert System
 
+% Stores user answers dynamically as known(Attribute, Value)
 :- dynamic known/2.
 
 
-% ==========================================================
-% KNOWLEDGE BASE AND DISH IDENTIFICATION RULES
-% ==========================================================
+% Knowledge base and dish identification rules
 
-% ----------------------------------------------------------
-% 1. BASIC DISH CATEGORIES
-% ----------------------------------------------------------
+% 1. Basic dish categories
+% Group each supported dish by its primary base ingredient
 
 % Rice-based dishes
 rice_dish(nasi_lemak).
@@ -31,9 +27,8 @@ dough_dish(steamed_dumplings).
 meat_dish(satay).
 
 
-% ----------------------------------------------------------
-% 2. BASIC CHARACTERISTIC RULES
-% ----------------------------------------------------------
+% 2. Basic characteristic rules
+% Map stored user answers from known/2 into readable predicates
 
 has_base(Base) :-
     known(base, Base).
@@ -81,9 +76,8 @@ has_seasoned_meat :-
     known(seasoned_meat, yes).
 
 
-% ----------------------------------------------------------
-% 3. INTERMEDIATE KNOWLEDGE LAYERS
-% ----------------------------------------------------------
+% 3. Intermediate knowledge layers
+% Combine basic characteristics into higher-level dish traits
 
 % Base categories
 rice_based :-
@@ -146,50 +140,49 @@ seasoned_grilled_meat :-
     has_seasoned_meat.
 
 
-% ----------------------------------------------------------
-% 4. FINAL DISH IDENTIFICATION RULES
-% ----------------------------------------------------------
+% 4. Final dish identification rules
+% Each rule checks the category and required traits for a specific dish
 
-% Rule 1: Nasi Lemak
+% Rule 1: Nasi Lemak (rice + coconut milk + sambal)
 identify(nasi_lemak) :-
     rice_dish(nasi_lemak),
     rice_based,
     uses_coconut_milk,
     has_sambal.
 
-% Rule 2: Char Kway Teow
+% Rule 2: Char Kway Teow (fried flat rice noodles)
 identify(char_kway_teow) :-
     noodle_dish(char_kway_teow),
     noodle_based,
     fried_dish,
     has_flat_rice_noodles.
 
-% Rule 3: Asam Laksa
+% Rule 3: Asam Laksa (noodles in sour fish broth)
 identify(asam_laksa) :-
     noodle_dish(asam_laksa),
     noodle_based,
     broth_based,
     has_sour_fish_broth.
 
-% Rule 4: Ramen
+% Rule 4: Ramen (noodles in Japanese-style broth)
 identify(ramen) :-
     noodle_dish(ramen),
     noodle_based,
     broth_based,
     has_japanese_style_broth.
 
-% Rule 5: Congee
+% Rule 5: Congee (porridge-style rice)
 identify(congee) :-
     rice_dish(congee),
     porridge_dish.
 
-% Rule 6: Steamed Dumplings
+% Rule 6: Steamed Dumplings (steamed filled dough)
 identify(steamed_dumplings) :-
     dough_dish(steamed_dumplings),
     filled_dough_dish,
     steamed_dish.
 
-% Rule 7: Sushi
+% Rule 7: Sushi (seasoned rice with fish or vegetable toppings)
 identify(sushi) :-
     rice_dish(sushi),
     seasoned_rice_dish,
@@ -202,21 +195,20 @@ identify(satay) :-
     grilled_dish,
     sauced_skewer_dish.
 
-% Rule 8b: Satay with seasoned/marinated meat fallback
+% Rule 8b: Satay with seasoned/marinated meat fallback when dipping sauce is not confirmed
 identify(satay) :-
     meat_dish(satay),
     seasoned_grilled_meat,
     \+ has_dipping_sauce.
 
-% Rule 9: Nasi Goreng
+% Rule 9: Nasi Goreng (fried rice with stir-fry ingredients)
 identify(nasi_goreng) :-
     rice_dish(nasi_goreng),
     fried_rice_dish.
 
 
-% ----------------------------------------------------------
-% 5. LIST OF SUPPORTED DISHES
-% ----------------------------------------------------------
+% 5. List of supported dishes
+% Reference list of all dishes the system can identify
 
 possible_dish(nasi_lemak).
 possible_dish(char_kway_teow).
@@ -230,9 +222,8 @@ possible_dish(nasi_goreng).
 
 
 
-% ==========================================================
-% 1. START THE SYSTEM
-% ==========================================================
+% 1. Start the system
+% Entry point: clears previous session facts, prints instructions, and runs identification
 
 identify :-
     clear,
@@ -247,17 +238,15 @@ identify :-
     identify_dish.
 
 
-% ==========================================================
-% 2. RESET MEMORY
-% ==========================================================
+% 2. Reset memory
+% Remove all stored known/2 facts from previous runs
 
 clear :-
     retractall(known(_, _)).
 
 
-% ==========================================================
-% 3. MAIN IDENTIFICATION PROCESS
-% ==========================================================
+% 3. Main identification process
+% Ask for the main base, branch into base-specific questions, then display the result
 
 identify_dish :-
     ask_base,
@@ -265,9 +254,8 @@ identify_dish :-
     finish_identification.
 
 
-% ==========================================================
-% 4. CHOOSE QUESTION PATH BASED ON MAIN BASE
-% ==========================================================
+% 4. Choose question path based on main base
+% Branch to the relevant follow-up questions; cuts prevent backtracking into other branches
 
 continue_from_base :-
     known(base, rice),
@@ -293,9 +281,8 @@ continue_from_base :-
     true.
 
 
-% ==========================================================
-% 5. RICE DISH QUESTION FLOW
-% ==========================================================
+% 5. Rice dish question flow
+% Narrow down between Congee, Sushi, Nasi Lemak, and Nasi Goreng
 
 rice_questions :-
     ask_rice_style,
@@ -352,7 +339,7 @@ continue_rice_identification :-
 continue_rice_identification :-
     true.
 
-% Only ask about fried-rice ingredients if the method is fried
+% Only ask about fried-rice ingredients if the cooking method is fried
 continue_fried_rice_question :-
     known(method, fried),
     !,
@@ -362,9 +349,8 @@ continue_fried_rice_question :-
     true.
 
 
-% ==========================================================
-% 6. NOODLE DISH QUESTION FLOW
-% ==========================================================
+% 6. Noodle dish question flow
+% Narrow down between Char Kway Teow (fried), Asam Laksa (sour fish broth), and Ramen (Japanese broth)
 
 noodle_questions :-
     ask_method,
@@ -386,7 +372,7 @@ continue_from_noodle_method :-
 continue_from_noodle_method :-
     true.
 
-% If sour fish broth confirmed, skip Japanese broth question
+% If sour fish broth is confirmed, skip the Japanese broth question
 continue_from_sour_fish_broth :-
     known(sour_fish_broth, yes),
     !.
@@ -395,15 +381,14 @@ continue_from_sour_fish_broth :-
     ask_japanese_style_broth.
 
 
-% ==========================================================
-% 7. DOUGH DISH QUESTION FLOW
-% ==========================================================
+% 7. Dough dish question flow
+% Check whether the dough is filled and how it is cooked (Steamed Dumplings)
 
 dough_questions :-
     ask_filled_dough,
     continue_from_dough_filling.
 
-% Only ask method if filled dough is confirmed or unknown
+% Only ask cooking method if filled dough is confirmed or unknown
 continue_from_dough_filling :-
     \+ known(filled_dough, no),
     !,
@@ -413,9 +398,8 @@ continue_from_dough_filling :-
     true.
 
 
-% ==========================================================
-% 8. MEAT DISH QUESTION FLOW
-% ==========================================================
+% 8. Meat dish question flow
+% Check grilling, skewers, dipping sauce, and seasoning (Satay)
 
 meat_questions :-
     ask_method,
@@ -430,7 +414,7 @@ continue_from_meat_method :-
 continue_from_meat_method :-
     true.
 
-% Only ask sauce if food is served on skewers
+% Only ask about sauce if the food is served on skewers
 continue_from_skewers :-
     known(skewers, yes),
     !,
@@ -440,7 +424,7 @@ continue_from_skewers :-
 continue_from_skewers :-
     true.
 
-% If dipping sauce confirmed, Satay is satisfied; otherwise ask if meat is seasoned
+% If dipping sauce is confirmed, Satay is satisfied; otherwise ask if meat is seasoned
 continue_from_dipping_sauce :-
     known(dipping_sauce, yes),
     !.
@@ -449,9 +433,8 @@ continue_from_dipping_sauce :-
     ask_seasoned_meat.
 
 
-% ==========================================================
-% 9. MAIN BASE QUESTION
-% ==========================================================
+% 9. Main base question
+% Ask for the primary ingredient of the dish (skip if already answered)
 
 ask_base :-
     known(base, _),
@@ -471,6 +454,7 @@ ask_base :-
     assertz(known(base, Base)),
     format('Recorded: main base = ~w~n', [Base]).
 
+% Retry on invalid input
 ask_base :-
     writeln('Invalid choice. Please enter 1, 2, 3 or 4.'),
     ask_base.
@@ -481,9 +465,8 @@ base_choice(3, dough).
 base_choice(4, meat).
 
 
-% ==========================================================
-% 10. COOKING METHOD QUESTION
-% ==========================================================
+% 10. Cooking method question
+% Ask how the dish is prepared; if broth is chosen, also record has_broth = yes
 
 ask_method :-
     known(method, _),
@@ -510,6 +493,7 @@ ask_method :-
     ),
     format('Recorded: cooking method = ~w~n', [Method]).
 
+% Retry on invalid input
 ask_method :-
     writeln('Invalid choice. Please enter 1, 2, 3 or 4.'),
     ask_method.
@@ -520,9 +504,8 @@ method_choice(3, grilled).
 method_choice(4, broth).
 
 
-% ==========================================================
-% 11. GENERIC YES / NO / UNKNOWN QUESTION
-% ==========================================================
+% 11. Generic yes / no / unknown question helper
+% Reusable prompt that stores yes, no, or unknown under known(Key, Answer)
 
 ask_characteristic(Key, _Question) :-
     known(Key, _),
@@ -541,6 +524,7 @@ ask_characteristic(Key, Question) :-
     assertz(known(Key, Answer)),
     format('Recorded: ~w = ~w~n', [Key, Answer]).
 
+% Retry on invalid input
 ask_characteristic(Key, Question) :-
     writeln('Invalid choice. Please enter 1, 2 or 3.'),
     ask_characteristic(Key, Question).
@@ -550,9 +534,7 @@ yes_no_unknown(2, no).
 yes_no_unknown(3, unknown).
 
 
-% ==========================================================
-% 12. COCONUT MILK
-% ==========================================================
+% 12. Coconut milk question (Nasi Lemak)
 
 ask_coconut_milk :-
     ask_characteristic(
@@ -561,9 +543,7 @@ ask_coconut_milk :-
     ).
 
 
-% ==========================================================
-% 13. SAMBAL
-% ==========================================================
+% 13. Sambal question (Nasi Lemak)
 
 ask_sambal :-
     ask_characteristic(
@@ -572,9 +552,7 @@ ask_sambal :-
     ).
 
 
-% ==========================================================
-% 14. BROTH
-% ==========================================================
+% 14. Broth question
 
 ask_broth :-
     known(has_broth, _),
@@ -587,9 +565,7 @@ ask_broth :-
     ).
 
 
-% ==========================================================
-% 15. SOUR FISH BROTH
-% ==========================================================
+% 15. Sour fish broth question (Asam Laksa)
 
 ask_sour_fish_broth :-
     ask_characteristic(
@@ -598,9 +574,7 @@ ask_sour_fish_broth :-
     ).
 
 
-% ==========================================================
-% 16. JAPANESE-STYLE BROTH
-% ==========================================================
+% 16. Japanese-style broth question (Ramen)
 
 ask_japanese_style_broth :-
     ask_characteristic(
@@ -609,9 +583,7 @@ ask_japanese_style_broth :-
     ).
 
 
-% ==========================================================
-% 17. FILLED DOUGH
-% ==========================================================
+% 17. Filled dough question (Steamed Dumplings)
 
 ask_filled_dough :-
     ask_characteristic(
@@ -620,9 +592,7 @@ ask_filled_dough :-
     ).
 
 
-% ==========================================================
-% 18. SKEWERS
-% ==========================================================
+% 18. Skewers question (Satay)
 
 ask_skewers :-
     ask_characteristic(
@@ -631,9 +601,7 @@ ask_skewers :-
     ).
 
 
-% ==========================================================
-% 19. DIPPING SAUCE
-% ==========================================================
+% 19. Dipping sauce question (Satay)
 
 ask_dipping_sauce :-
     ask_characteristic(
@@ -642,9 +610,7 @@ ask_dipping_sauce :-
     ).
 
 
-% ==========================================================
-% 20. FLAT RICE NOODLES
-% ==========================================================
+% 20. Flat rice noodles question (Char Kway Teow)
 
 ask_flat_rice_noodles :-
     ask_characteristic(
@@ -653,9 +619,7 @@ ask_flat_rice_noodles :-
     ).
 
 
-% ==========================================================
-% 21. SEASONED RICE + TOPPINGS
-% ==========================================================
+% 21. Seasoned rice and toppings question (Sushi)
 
 ask_seasoned_rice_toppings :-
     ask_characteristic(
@@ -664,9 +628,7 @@ ask_seasoned_rice_toppings :-
     ).
 
 
-% ==========================================================
-% 22. SEASONED MEAT
-% ==========================================================
+% 22. Seasoned meat question (Satay fallback)
 
 ask_seasoned_meat :-
     ask_characteristic(
@@ -675,9 +637,8 @@ ask_seasoned_meat :-
     ).
 
 
-% ==========================================================
-% 23. RICE STYLE
-% ==========================================================
+% 23. Rice style question
+% Distinguish between porridge (Congee), seasoned rice (Sushi), or other rice dishes
 
 ask_rice_style :-
     known(rice_style, _),
@@ -697,6 +658,7 @@ ask_rice_style :-
     assertz(known(rice_style, Style)),
     format('Recorded: rice style = ~w~n', [Style]).
 
+% Retry on invalid input
 ask_rice_style :-
     writeln('Invalid choice. Please enter 1, 2, 3 or 4.'),
     ask_rice_style.
@@ -707,9 +669,7 @@ rice_style_choice(3, neither).
 rice_style_choice(4, unknown).
 
 
-% ==========================================================
-% 24. FRIED RICE INGREDIENTS
-% ==========================================================
+% 24. Fried rice ingredients question (Nasi Goreng)
 
 ask_fried_rice_ingredients :-
     ask_characteristic(
@@ -718,23 +678,22 @@ ask_fried_rice_ingredients :-
     ).
 
 
-% ==========================================================
-% 25. FIND THE RESULT
-% ==========================================================
+% 25. Find the result
+% Collect all matching dishes and only accept a unique match
 
 find_result(Dish) :-
     findall(D, identify(D), Dishes),
     sort(Dishes, UniqueDishes),
     choose_result(UniqueDishes, Dish).
 
+% Succeeds with a dish only when exactly one unique dish matches; otherwise cannot_determine
 choose_result([Dish], Dish).
 choose_result([], cannot_determine).
 choose_result([_,_|_], cannot_determine).
 
 
-% ==========================================================
-% 26. FINISH IDENTIFICATION
-% ==========================================================
+% 26. Finish identification
+% Print the identified dish (or cannot_determine) and explain the reasoning
 
 finish_identification :-
     find_result(Dish),
@@ -776,9 +735,8 @@ display_result(cannot_determine) :-
     writeln('Result: CANNOT DETERMINE').
 
 
-% ==========================================================
-% 27. EXPLANATION
-% ==========================================================
+% 27. Explanation
+% Print the confirmed evidence that led to the identified dish (or why it failed)
 
 explain(nasi_lemak) :-
     writeln('Why?'),
@@ -970,9 +928,8 @@ explain(cannot_determine) :-
     show_answers.
 
 
-% ==========================================================
-% 28. EVIDENCE-BASED EXPLANATION HELPER
-% ==========================================================
+% 28. Evidence-based explanation helper
+% Print Message only if known(Key, Value) was confirmed; otherwise succeed silently
 
 explain_fact(Key, Value, Message) :-
     known(Key, Value),
@@ -982,9 +939,8 @@ explain_fact(Key, Value, Message) :-
 explain_fact(_, _, _).
 
 
-% ==========================================================
-% 29. DISPLAY STORED ANSWERS
-% ==========================================================
+% 29. Display stored answers
+% Print every known(Key, Value) fact recorded during the session
 
 show_answers :-
     forall(
